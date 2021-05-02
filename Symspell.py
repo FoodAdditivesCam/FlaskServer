@@ -23,8 +23,10 @@ class TodoPost(Resource):
         result = {}
         count = 0
         for suggestion in suggestions:
-            result[count] = str(suggestion).split(',')[0]
+            result[count] = str(suggestion)
             count += 1
 
+        print(json.dumps(result, ensure_ascii=False))
+
         # json 형식으로 반환
-        return json.dumps(result)
+        return json.dumps(result, indent=4, ensure_ascii=False)
