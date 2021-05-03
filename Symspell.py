@@ -1,8 +1,9 @@
 # Symspell 결과 반환
-from flask import request
+from flask import request, jsonify
 from flask_restx import Resource, Api, Namespace
 from symspellpy import SymSpell, Verbosity
 import json
+from flask import make_response
 
 # 이 페이지의 이름이 Symspell이라고 정의해주는 것.
 Symspell = Namespace('Symspell')
@@ -26,7 +27,14 @@ class TodoPost(Resource):
             result[count] = str(suggestion)
             count += 1
 
-        print(json.dumps(result, ensure_ascii=False))
+        message = {
+            'status': 200,
+            'message': 'OK',
+            'scores': result
+        }
+        resp = jsonify(message)
+        resp.status_code = 200
+        print(resp)
 
         # json 형식으로 반환
-        return json.dumps(result, indent=4, ensure_ascii=False)
+        return resp

@@ -5,6 +5,7 @@ from Symspell import Symspell
 
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False
 api = Api(app)
 
 # 분리한 파일을 api에 등록
