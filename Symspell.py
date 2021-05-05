@@ -19,7 +19,7 @@ class TodoPost(Resource):
         # input_term 오타 교정
         suggestions = sym_spell.lookup(
             input_term, Verbosity.CLOSEST,
-            max_edit_distance=2, include_unknown=True)  # include_unknown : 일치하는 결과가 없을 경우 입력 단어 반환
+            max_edit_distance=2, include_unknown=False)  # include_unknown : 일치하는 결과가 없을 경우 입력 단어 반환
 
         result = {}
         count = 0
