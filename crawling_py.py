@@ -41,15 +41,21 @@ def crawling(keyword):
         driver.get(val)
         html = driver.page_source
         soup = BeautifulSoup(html, "lxml")
-        for script in soup.find_all('header'):
-            script.extract()
-        for script in soup.find_all('footer'):
-            script.extract()
-        for script in soup.find_all('script'):
-            script.extract()
-        for script in soup.find_all('style'):
-            script.extract()
-        content = soup.find('body').get_text()
+
+        # html의 태그 추출해서 삭제
+        [s.extract() for s in soup(['style', 'script', '[document]', 'head', 'title'])]
+        content=soup.getText()
+
+        # for script in soup.find_all('header'):
+        #     script.extract()
+        # for script in soup.find_all('footer'):
+        #     script.extract()
+        # for script in soup.find_all('script'):
+        #     script.extract()
+        # for script in soup.find_all('style'):
+        #     script.extract()
+        # content = soup.find('body').get_text()
+
         content = content.replace("\n", " ")
         contents[key] = content
         print(content)
