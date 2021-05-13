@@ -36,11 +36,20 @@ def crawling(keyword):
     contents = {}  # 모든 문서의 내용 저장, key=문서이름, value=문서 body 내용
     # todo: 각 문서에 대한 html body부분 저장
     for key, val in result.items():
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         print(val)
         driver.get(val)
         html = driver.page_source
         soup = BeautifulSoup(html, "lxml")
-        content = soup.find('body').text
+        for script in soup.find_all('header'):
+            script.extract()
+        for script in soup.find_all('footer'):
+            script.extract()
+        for script in soup.find_all('script'):
+            script.extract()
+        for script in soup.find_all('style'):
+            script.extract()
+        content = soup.find('body').get_text()
         content = content.replace("\n", " ")
         contents[key] = content
         print(content)
@@ -52,4 +61,8 @@ keywords = ['토마토', '코코아'] # 검색어 리스트
 result={}
 for i in keywords:
     result[i] = crawling(i)
+
+f = open('crawlingResult.txt', 'w')
+f.write(str(result))
+f.close()
 print(result)
