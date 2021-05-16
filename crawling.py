@@ -11,15 +11,14 @@ from selenium import webdriver
 # 이 페이지의 이름이 Crawling이라고 정의해주는 것.
 Crawling = Namespace('Crawling')
 
-# 3.35.255.25/Crawling/<keyword> 주소가 들어왔을 때 실행
-@Crawling.route('/<string:keyword>')
+# 3.35.255.25/crawling/<keyword>/<size> 주소가 들어왔을 때 실행
+@Crawling.route('/<string:keyword>/<int:size>')
 class Search(Resource):
-    def get(self, keyword):
+    def get(self, keyword, size):
         keywords=[]  # 검색어 리스트 toy
         keywords.append(keyword)
         search_filtering = ' -유튜브, -아프리카티비, -지마켓, -옥션, -쇼핑몰, -TV'
         search_words = ['', ' 사전', ' 효능', ' 부작용']  # 검색어 option list
-        size = 2
         result = {}
         for keyword in keywords:
             for search_word in search_words:
@@ -42,13 +41,15 @@ class Search(Resource):
         baseUrl = 'https://www.google.com/search?q='
         url = baseUrl + quote_plus(keyword)
 
+
         # todo: webdriver option 설정
+        path = '/home/ubuntu/FlaskServer' # chromedriver.exe
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('headless')
         chrome_options.add_argument("--no-sandbox")  # GUI를 사용할 수 없는 환경에서 설정, linux, docker 등
         chrome_options.add_argument("--disable-gpu")  # GUI를 사용할 수 없는 환경에서 설정, linux, docker 등
         chrome_options.add_argument('lang=ko_KR')
-        driver = webdriver.Chrome(options=chrome_options)
+        driver = webdriver.Chrome(path,options=chrome_options)
         driver.get(url)
 
         # todo: 읽어온 페이지의 html 코드 받아오기
