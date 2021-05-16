@@ -43,7 +43,7 @@ class Search(Resource):
 
 
         # todo: webdriver option 설정
-        path = '/home/ubuntu/FlaskServer' # chromedriver.exe
+        path = '/home/ubuntu/FlaskServer/chromedriver' # chromedriver.exe
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('headless')
         chrome_options.add_argument("--no-sandbox")  # GUI를 사용할 수 없는 환경에서 설정, linux, docker 등
