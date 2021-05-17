@@ -43,7 +43,7 @@ class Search(Resource):
 
 
         # todo: webdriver option 설정
-        path = '/home/ubuntu/FlaskServer/chromedriver' # chromedriver.exe
+        path = 'chromedriver.exe' # chromedriver.exe /home/ubuntu/FlaskServer/chromedriver
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument('headless')
         chrome_options.add_argument("--no-sandbox")  # GUI를 사용할 수 없는 환경에서 설정, linux, docker 등
@@ -57,6 +57,7 @@ class Search(Resource):
         soup = BeautifulSoup(html, "lxml")
 
         link_result = {}  # 검색 결과의 리스트 저장, key=문서이름, value=문서링크
+        link_result_2 = []
         lists = soup.select('#rso > .g')
 
         # 가져올 사이트 개수 조정
@@ -67,46 +68,33 @@ class Search(Resource):
             name = list.select_one('.LC20lb.DKV0Md').text
             link = list.a.attrs['href']
             link_result[name] = link
+            link_result_2.append(link)
             cur_doc_count += 1
             # 가져올 사이트 개수 조정
             if cur_doc_count >= size:
                 break
-        print(link_result)
+        print(link_result_2)
 
-        contents = {}  # 모든 문서의 내용 저장, key=문서이름, value=문서 body 내용
-        # todo: 각 문서에 대한 html body부분 저장
-        for key, val in link_result.items():
-            driver.get(val)
-
-            html = driver.page_source
-            soup = BeautifulSoup(html, "lxml")
-
-            # html의 태그 추출해서 삭제
-            [s.extract() for s in soup(['style', 'script', '[document]', 'head', 'title'])]  # header, footer
-            content = soup.find('body').getText()
-
-            content = content.replace("\n", " ")
-            contents[key] = content
-            print(key)
-        driver.close()
-
-        # # 결과 json으로 출력
-        # message = {
-        #     'status': 200,
-        #     'message': 'OK',
-        #     'scores': link_result,
-        #     'content': contents
-        # }
-        # resp = jsonify(message)
-        # resp.status_code = 200
-        # print(resp)
+        # contents = {}  # 모든 문서의 내용 저장, key=문서이름, value=문서 body 내용
+        # # todo: 각 문서에 대한 html body부분 저장
+        # for key, val in link_result.items():
+        #     driver.get(val)
+        #
+        #     html = driver.page_source
+        #     soup = BeautifulSoup(html, "lxml")
+        #
+        #     # html의 태그 추출해서 삭제
+        #     [s.extract() for s in soup(['style', 'script', '[document]', 'head', 'title'])]  # header, footer
+        #     content = soup.find('body').getText()
+        #
+        #     content = content.replace("\n", " ")
+        #     contents[key] = content
+        #     print(key)
+        # driver.close()
 
         # json 형식으로 반환
-        return contents
+        return link_result
 
-
-# if __name__ == "__main__":
-#     print(get_search_count("코코아"))
 
 
 
