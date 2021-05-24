@@ -8,14 +8,17 @@ class SplitText:
         text = text.replace("\n", "")
 
         ##읽어온 문자열 쉼표로 분리
-        txt_c = text.split(",")
+        txt = text.split(",")
         ##쉼표로 분리한 문자열 스페이스바로 분리
-        txt_s = txt_c.split(" ")
+        txt = txt.split(" ")
+        ##스페이스바로 분리한 괄호로 분리
+        txt = txt.split("(")
+        txt = txt.split(")")
 
         ##text초기화
         text = list()
 
-        for i in txt_s:
+        for i in txt:
             ##비어있는 데이터 삭제
             if (len(i) == 0):
                 continue
