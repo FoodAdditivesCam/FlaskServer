@@ -1,72 +1,259 @@
 from bs4 import BeautifulSoup
 from urllib.parse import quote_plus
+
+from flask import Config
 from selenium import webdriver
+
+from krwordrank.sentence import summarize_with_sentences
+from krwordrank.word import KRWordRank
+from newspaper import Article, ArticleException
+from konlpy.tag import Kkma
+from konlpy.tag import Twitter
 # todo: bs4, selenium install
 
-def crawling(keyword, size):
-    baseUrl = 'https://www.google.com/search?q='
-    url = baseUrl + quote_plus(keyword)
 
-    # todo: webdriver option 설정
-    chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('headless')
-    chrome_options.add_argument("--no-sandbox")  # GUI를 사용할 수 없는 환경에서 설정, linux, docker 등
-    chrome_options.add_argument("--disable-gpu")  # GUI를 사용할 수 없는 환경에서 설정, linux, docker 등
-    chrome_options.add_argument('lang=ko_KR')
-    driver = webdriver.Chrome(options=chrome_options)
-    driver.get(url)
+class SentenceTokenizer(object):
+    def __init__(self):
+        self.kkma = Kkma()
+        self.twitter = Twitter()
+        self.stopwords = ['중인' ,'만큼', '마찬가지', '꼬집었', "연합뉴스", "데일리", "동아일보", "중앙일보", "조선일보", "기자"
+        ,"아", "휴", "아이구", "아이쿠", "아이고", "어", "나", "우리", "저희", "따라", "의해", "을", "를", "에", "의", "가"]
 
-    # todo: 읽어온 페이지의 html 코드 받아오기
-    html = driver.page_source
-    soup = BeautifulSoup(html, "lxml")
+    def url2sentences(self, url):
+        url = url.strip()
+        article = Article(url, language='ko')
+        article.download()
+        article.parse()
 
-    result = {}  # 검색 결과의 리스트 저장, key=문서이름, value=문서링크
-    lists = soup.select('#rso > .g')
+        sentences = self.kkma.sentences(article.text)
 
-    # 가져올 사이트 개수 조정
-    cur_doc_count = 0
+        for idx in range(0, len(sentences)):
+            if len(sentences[idx]) <= 10:
+                sentences[idx-1] += (' ' + sentences[idx])
+                sentences[idx] = ''
+        return sentences
 
-    # todo: 검색 결과의 리스트 저장
-    for list in lists:
-        name = list.select_one('.LC20lb.DKV0Md').text
-        link = list.a.attrs['href']
-        result[name] = link
-        cur_doc_count+=1
-        # 가져올 사이트 개수 조정
-        if cur_doc_count>size:
-            break
-    print(result)
+    def text2sentences(self, text):
+        sentences = self.kkma.sentences(text)
+        for idx in range(0, len(sentences)):
+            if len(sentences[idx]) <= 10:
+                sentences[idx-1] += (' ' + sentences[idx])
+                sentences[idx] = ''
+        return sentences
 
-    contents = {}  # 모든 문서의 내용 저장, key=문서이름, value=문서 body 내용
-    # todo: 각 문서에 대한 html body부분 저장
-    for key, val in result.items():
-        driver.get(val)
-        html = driver.page_source
-        soup = BeautifulSoup(html, "lxml")
+    def get_nouns(self, sentences):
+        nouns = []
+        for sentence in sentences:
+            if sentence is not '':
+                nouns.append(' '.join([noun for noun in self.twitter.nouns(str(sentence))
+            if noun not in self.stopwords and len(noun) > 1]))
+        return nouns
 
-        # html의 태그 추출해서 삭제
-        [s.extract() for s in soup(['style', 'script', '[document]', 'head', 'title'])] # header, footer
-        content=soup.find('body').getText()
+def getResult(url, keyword):
+    result_words = {}
+    result_sentences = []
 
-        content = content.replace("\n", " ")
-        contents[key] = content
-        print(content)
-    driver.close()
-    return contents
+    sentences = []
+    sent_tokenize = SentenceTokenizer()
+    sentences += (sent_tokenize.url2sentences(url))
+    nouns = sent_tokenize.get_nouns(sentences)
 
-# main code
-keywords = ['토마토'] # 검색어 리스트 toy
-search_words = [' ',' 사전',' 효능',' 부작용'] # 검색어 option list
-search_filtering = ' -유튜브, -아프리카티비, -지마켓, -옥션, -쇼핑몰'
-size = 3
-final_search_word = {}
-result={}
-for keyword in keywords:
-    for search_word in search_words:
-        print(keyword+search_word+search_filtering)
-        result[keyword] = crawling(keyword+search_word+search_filtering, size)
+    print(sentences)
 
-# f = open('crawlingResult.txt', 'w')
-# f.write(str(result))
-# f.close()
-print(result)
+    # train KR-WordRank model
+    wordrank_extractor = KRWordRank(
+        min_count=3,  # 단어의 최소 출현 빈도수 (그래프 생성 시)
+        max_length=10,  # 단어의 최대 길이
+        verbose=True
+    )
+
+    beta = 0.85  # PageRank의 decaying factor beta
+    max_iter = 10
+
+    keywords, rank, graph = wordrank_extractor.extract(sentences, beta, max_iter)
+
+    stopwords = {'만니톨', '있다.', '얼마나', '나', '지말고', '관계없이', '그렇지 않으면', '이렇구나', '휴', '잠시', '그들', '를', '하고있었다', '바꾸어서 말하면',
+                 '견지에서', '일단', '더구나', '겨우', '어때', '저쪽', '펄렁', '거바', '구체적으로', '하기는한데', '의해서', '양자', '이지만', '관하여', '혹은',
+                 '그치지 않다', '으로서', '토하다', '야', '하든지', '어떤것들', '아', '왜', '매번', '너희', '점에서 보아', '이 정도의', '하기 위하여', '더욱이는',
+                 '얼마', '어쩔수 없다', '그에 따르는', '바와같이', '어떻해', '좀', '이었다', '오로지', '바꿔 말하면', '하려고하다', '힘입어', '와', '둥둥', '아이야',
+                 '이와같다면', '하는바', '헉', '무렵', '여덟', '이 외에', '하는것도', '가까스로', '더욱더', '퉤', '할줄알다', '아홉', '논하지 않다', '거니와',
+                 '즈음하여', '하구나', '든간에', '이와 같은', '바로', '하면서', '이상', '콸콸', '어느곳', '그러면', '설마', '조차', '그런데', '안 그러면',
+                 '요만한 것', '조금', '하는 김에', '마저도', '설령', '도착하다', '에 대해', '왜냐하면', '이어서', '흐흐', '즉시', '끙끙', '따라', '물론',
+                 '비길수 없다', '오호', '이만큼', '참나', '허', '해봐요', '이젠', '결과에 이르다', '봐라', '하는것만 못하다', '좋아', '알았어', '헉헉', '육',
+                 '한항목', '그럼에도 불구하고', '형식으로 쓰여', '그렇지않으면', '하게될것이다', '허걱', '이외에도', '허허', '그저', '뿐만 아니라', '일지라도', '자',
+                 '자마자', '더군다나', '것들', '어찌됏든', '하도록시키다', '하지 않도록', '몇', '정도에 이르다', '어느해', '그럼', '아이구', '잠깐', '시작하여',
+                 '소인', '또한', '끼익', '각', '너', '어떠한', '비추어 보아', '입각하여', '인 듯하다', '으로써', '연이서', '더라도', '할뿐', '앞에서',
+                 '때가 되어', '저것만큼', '제외하고', '이 되다', '진짜로', '말할것도 없고', '와 같은 사람들', '그렇게 함으로써', '얼마간', '마저', '요컨대', '할망정',
+                 '그러므로', '딩동', '그러한즉', '어찌하든지', '의해', '혹시', '근거로', '쳇', '년', '로부터', '자기', '응', '심지어', '그러나', '이유만으로',
+                 '해도좋다', '하마터면', '자기집', '할 줄 안다', '탕탕', '그러니까', '흥', '쾅쾅', '만이 아니다', '예를 들면', '하겠는가', '보드득', '이천칠',
+                 '얼마큼', '고로', '주룩주룩', '하물며', '에 가서', '당신', '향하여', '대해 말하자면', '말하자면', '과연', '위에서 서술한바와같이', '팔', '대하면',
+                 '대하여', '아이고', '우르르', '한데', '지만', '바꾸어서 한다면', '하도다', '다수', '한켠으로는', '하기보다는', '과', '그런 까닭에', '들', '예컨대',
+                 '어느', '인젠', '그렇지만', '이때', '했어요', '저희', '칠', '령', '동시에', '관계가 있다', '다음에', '있다', '전후', '할수있다', '그때',
+                 '너희들', '뒤따라', '고려하면', '까지 미치다', '총적으로 말하면', '로써', '여부', '좍좍', '아울러', '무엇', '할때', '하자마자', '어째서', '오자마자',
+                 '약간', '해야한다', '이', '저것', '앗', '할 생각이다', '뿐만아니라', '메쓰겁다', '남짓', '아니라면', '반드시', '비걱거리다', '각각', '만약에',
+                 '않기 위해서', '참', '아이', '및', '임에 틀림없다', '같이', '어느때', '둘', '윙윙', '향하다', '쿵', '영차', '지든지', '훨씬', '한 이유는',
+                 '이로 인하여', '각종', '등', '보는데서', '그런즉', '이 때문에', '에', '이러이러하다', '할지라도', '이천구', '만 못하다', '우에 종합한것과같이',
+                 '할수있어', '불문하고', '쪽으로', '예를 들자면', '하곤하였다', '자신', '게다가', '어느 년도', '까지', '륙', '어디', '운운', '까닭으로', '것',
+                 '오히려', '이천육', '어찌됏어', '결론을 낼 수 있다', '아무거나', '습니까', '누가 알겠는가', '다만', '실로', '주저하지 않고', '바꾸어말하면',
+                 '알 수 있다', '이라면', '그렇지', '일때', '타다', '이런', '휘익', '셋', '무엇때문에', '여섯', '이천팔', '에 있다', '연관되다', '이럴정도로',
+                 '까악', '거의', '할 따름이다', '붕붕', '하는것이 낫다', '않기 위하여', '의지하여', '기타', '하여야', '봐', '해서는 안된다', '다소', '시간', '오직',
+                 '의해되다', '잇따라', '함께', '만은 아니다', '으로 인하여', '아이쿠', '로 인하여', '저기', '게우다', '에 한하다', '이번', '하지 않는다면', '시초에',
+                 '즉', '얼마만큼', '이러한', '와아', '한다면 몰라도', '버금', '아니었다면', '된이상', '중의하나', '비하면', '타인', '다른', '에 달려 있다', '졸졸',
+                 '기대여', '로', '이 밖에', '그래', '아니면', '그만이다', '때', '누구', '그중에서', '비록', '어찌', '제각기', '동안', '하', '이용하여', '삐걱',
+                 '여기', '만일', '네', '여보시오', '하여금', '넷', '할지언정', '설사', '개의치않고', '모두', '공동으로', '한 후', '이렇게 많은 것', '막론하고',
+                 '하기만 하면', '매', '상대적으로 말하자면', '요만한걸', '얼마든지', '여전히', '혼자', '월', '팍', '의거하여', '답다', '하면 할수록', '그', '언젠가',
+                 '따위', '어느쪽', '하더라도', '하는 편이 낫다', '할만하다', '한적이있다', '꽈당', '단지', '아야', '오', '비교적', '것과 같이', '어떤',
+                 '이와 반대로', '하기에', '하지만', '본대로', '그리하여', '된바에야', '만약', '하지마', '비로소', '삼', '겸사겸사', '만큼', '어쨋든', '다음으로',
+                 '시키다', '관해서는', '가령', '댕그', '하면된다', '다시말하면', '쉿', '바꾸어말하자면', '앞의것', '이래', '오르다', '을', '습니다', '여', '각자',
+                 '이리하여', '도달하다', '이봐', '전자', '이렇게말하자면', '일반적으로', '아하', '이르기까지', '조차도', '결국', '의', '틈타', '때문에', '무릎쓰고',
+                 '얼마 안 되는 것', '갖고말하자면', '옆사람', '한 까닭에', '반대로', '뚝뚝', '생각한대로', '할 지경이다', '등등', '라 해도', '우리', '위해서',
+                 '다시 말하자면', '구토하다', '다섯', '에서', '통하여', '한다면', '어떻게', '어찌하여', '일곱', '따라서', '와르르', '전부', '제', '뒤이어', '딱',
+                 '어떤것', '위하여', '이렇게되면', '기점으로', '에게', '일것이다', '구', '줄은모른다', '삐걱거리다', '아래윗', '비슷하다', '영', '두번째로', '퍽',
+                 '하도록하다', '이와 같다', '남들', '어', '근거하여', '예하면', '총적으로', '여러분', '대로 하다', '곧', '하고 있다', '마음대로', '부터', '아무도',
+                 '마치', '어기여차', '가', '하느니', '대해서', '으로', '첫번째로', '하나', '아니', '총적으로 보면', '시각', '불구하고', '그위에', '할 힘이 있다',
+                 '다른 방면으로', '툭', '그렇지 않다면', '차라리', '하하', '이곳', '모', '어느것', '그래도', '더불어', '이것', '부류의 사람들', '하기 때문에',
+                 '다음', '당장', '까지도', '줄은 몰랏다', '하지마라', '그래서', '또', '같다', '해요', '저', '언제', '일', '향해서', '중에서', '우리들',
+                 '보다더', '어이', '하게하다', '여차', '그러니', '관련이 있다', '한마디', '기준으로', '해도된다', '소생', '그리고', '요만큼', '우선', '솨',
+                 '뿐이다', '입장에서', '밖에 안된다', '따지지 않다', '응당', '놀라다', '관한', '나머지는', '외에도', '사', '헐떡헐떡', '엉엉', '아니나다를가',
+                 '반대로 말하자면', '무슨', '이쪽', '예', '그래도', '여덟', '점에서 보아', '우선', '이르기까지', '여차', '고로', '게다가', '당신', '다음에',
+                 '무렵', '쿵', '이쪽', '예를 들자면', '무슨', '이젠', '비길수 없다', '반대로', '운운', '오르다', '하도록시키다', '아니', '동안', '년', '틈타',
+                 '비추어 보아', '우에 종합한것과같이', '같이', '어떻해', '그렇지 않으면', '아무거나', '첫번째로', '알았어', '것들', '한 후', '거의', '그중에서', '이래',
+                 '왜냐하면', '왜', '어떤', '형식으로 쓰여', '어째서', '삐걱거리다', '그럼에도 불구하고', '까지', '해도좋다', '각', '버금', '하는것도', '구체적으로',
+                 '물론', '어떤것', '하곤하였다', '해도된다', '아홉', '잇따라', '그', '바꾸어서 말하면', '그러한즉', '하는것이 낫다', '영차', '동시에', '한 이유는',
+                 '하물며', '혹은', '오자마자', '다시 말하자면', '이때', '다섯', '할때', '했어요', '시키다', '오로지', '각각', '아', '하지만', '더구나', '함께',
+                 '흐흐', '토하다', '여러분', '이 되다', '타인', '일지라도', '해서는 안된다', '아이야', '된바에야', '그러므로', '여부', '로부터', '보는데서', '와',
+                 '예컨대', '과연', '기타', '만큼', '를', '따라', '주저하지 않고', '그런즉', '다만', '기대여', '일반적으로', '할수있어', '여', '이 밖에',
+                 '와 같은 사람들', '제외하고', '결국', '끙끙', '한적이있다', '어느때', '일', '이 외에', '않기 위해서', '마저도', '졸졸', '로써', '그렇지', '요컨대',
+                 '넷', '할만하다', '과', '하마터면', '이런', '하기 때문에', '막론하고', '아니면', '위에서 서술한바와같이', '이와 같은', '힘입어', '그러나', '아하',
+                 '대로 하다', '다소', '만은 아니다', '셋', '할지언정', '얼마큼', '만약', '팍', '이렇게말하자면', '에 가서', '대하면', '하는 편이 낫다', '매번',
+                 '너희', '또', '습니까', '하기는한데', '가까스로', '그러니', '기준으로', '바꾸어서 한다면', '즉', '이번', '혹시', '근거로', '할 따름이다',
+                 '하기보다는', '흥', '얼마간', '놀라다', '밖에 안된다', '한다면', '그들', '하여금', '앞의것', '하나', '즉시', '이', '이것', '할줄알다', '관하여',
+                 '줄은 몰랏다', '오직', '그렇지 않다면', '하지 않도록', '비록', '다른', '영', '아이쿠', '어때', '좋아', '아울러', '하지마', '든간에', '약간',
+                 '저희', '안 그러면', '응당', '펄렁', '참', '그렇지않으면', '주룩주룩', '곧', '차라리', '같다', '때가 되어', '때', '해요', '무엇', '꽈당',
+                 '구', '입장에서', '이천구', '좀', '결과에 이르다', '으로서', '하도록하다', '조금', '남짓', '하든지', '하느니', '누구', '그럼', '하더라도',
+                 '어떠한', '설령', '뒤따라', '하지마라', '그위에', '이상', '통하여', '네', '모두', '하면서', '그때', '딩동', '봐', '할수있다', '하하', '가령',
+                 '지든지', '까지 미치다', '휘익', '마음대로', '개의치않고', '요만한 것', '할뿐', '조차', '로', '그리고', '얼마만큼', '그만이다', '것과 같이',
+                 '반대로 말하자면', '이천칠', '향하다', '까지도', '갖고말하자면', '예를 들면', '쉿', '하고있었다', '의지하여', '으로 인하여', '하면 할수록', '툭',
+                 '에 있다', '이리하여', '도착하다', '참나', '전자', '어떻게', '마치', '휴', '얼마든지', '관련이 있다', '어떤것들', '겸사겸사', '연관되다', '있다',
+                 '아니었다면', '거니와', '이유만으로', '견지에서', '위해서', '말할것도 없고', '진짜로', '습니다', '무릎쓰고', '퍽', '하는 김에', '을', '가',
+                 '할 줄 안다', '시초에', '예하면', '여섯', '훨씬', '여기', '탕탕', '하도다', '와르르', '우리들', '허걱', '따위', '얼마나', '이지만', '따라서',
+                 '얼마 안 되는 것', '대해서', '지말고', '총적으로', '그에 따르는', '들', '설마', '더불어', '해봐요', '할지라도', '쳇', '전부', '저것', '부터',
+                 '그리하여', '중의하나', '아이', '삐걱', '의', '이어서', '이렇구나', '뚝뚝', '게우다', '으로', '답다', '비하면', '령', '바꿔 말하면', '너희들',
+                 '잠시', '하기 위하여', '쪽으로', '할 지경이다', '남들', '하면된다', '여보시오', '매', '그런 까닭에', '부류의 사람들', '이천육', '그러니까', '혼자',
+                 '거바', '윙윙', '솨', '언젠가', '어쩔수 없다', '둥둥', '타다', '이러이러하다', '에게', '공동으로', '헉', '에 한하다', '연이서', '바꾸어말하자면',
+                 '한 까닭에', '하는것만 못하다', '말하자면', '하구나', '논하지 않다', '더라도', '요만한걸', '오', '자신', '더욱이는', '아이고', '자마자', '다수',
+                 '저것만큼', '고려하면', '하기만 하면', '응', '기점으로', '하게될것이다', '만약에', '하고 있다', '어느 년도', '그렇게 함으로써', '각자', '무엇때문에',
+                 '아무도', '여전히', '어찌됏어', '생각한대로', '어찌하여', '비걱거리다', '구토하다', '다시말하면', '어쨋든', '어기여차', '향해서', '에 달려 있다', '각종',
+                 '하지 않는다면', '하여야', '등', '로 인하여', '이라면', '하자마자', '겨우', '둘', '향하여', '라 해도', '임에 틀림없다', '이천팔', '것', '아래윗',
+                 '또한', '잠깐', '외에도', '봐라', '만일', '일것이다', '및', '한마디', '관해서는', '소생', '지만', '다음', '오히려', '하', '의거하여',
+                 '다른 방면으로', '어느곳', '불문하고', '하는바', '심지어', '쾅쾅', '에서', '할망정', '불구하고', '삼', '저기', '더욱더', '어느것', '줄은모른다',
+                 '이렇게되면', '저쪽', '자', '총적으로 말하면', '인젠', '의해', '상대적으로 말하자면', '에', '자기', '해야한다', '너', '관계가 있다', '시작하여',
+                 '실로', '오호', '중에서', '언제', '뿐만아니라', '뿐만 아니라', '양자', '댕그', '비교적', '그치지 않다', '이럴정도로', '퉤', '콸콸', '륙',
+                 '반드시', '한데', '옆사람', '헉헉', '어느', '어느쪽', '딱', '의해되다', '붕붕', '좍좍', '하게하다', '몇', '사', '한항목', '만 못하다',
+                 '이러한', '비로소', '인 듯하다', '보다더', '그래', '할 생각이다', '어찌', '그런데', '단지', '월', '바와같이', '이봐', '누가 알겠는가',
+                 '한다면 몰라도', '위하여', '아니라면', '이 정도의', '까닭으로', '이용하여', '이외에도', '팔', '않기 위하여', '정도에 이르다', '따지지 않다', '요만큼',
+                 '하려고하다', '모', '바로', '때문에', '끼익', '헐떡헐떡', '에 대해', '저', '등등', '으로써', '메쓰겁다', '마저', '시각', '한켠으로는', '육',
+                 '의해서', '일단', '아야', '결론을 낼 수 있다', '까악', '엉엉', '하겠는가', '자기집', '칠', '어느해', '입각하여', '허', '제', '도달하다',
+                 '어찌됏든', '그렇지만', '앗', '이렇게 많은 것', '우리', '된이상', '그래서', '대해 말하자면', '허허', '할 힘이 있다', '하기에', '총적으로 보면',
+                 '이와같다면', '그저', '소인', '앞에서', '이만큼', '알 수 있다', '뿐이다', '전후', '일때', '아이구', '두번째로', '야', '시간', '일곱', '이었다',
+                 '설사', '와아', '우르르', '어디', '얼마', '나', '즈음하여', '이와 반대로', '더군다나', '어이', '뒤이어', '제각기', '나머지는', '아니나다를가',
+                 '어', '예', '대하여', '당장', '관한', '어찌하든지', '보드득', '이로 인하여', '만이 아니다', '조차도', '바꾸어말하면', '근거하여', '이 때문에',
+                 '이와 같다', '다음으로', '이곳', '비슷하다', '그러면', '본대로', '관계없이'}
+
+    # Check top 30 keywords with corresponding score
+    for word, r in sorted(keywords.items(), key=lambda x: -x[1])[:30]:
+        if not (word in stopwords):
+            print('%8s : %.4f' % (word, r))
+            result_words[word] = r
+
+    # 핵심 문장 추출하기
+    # remove stopwords
+    passwords = {word: score for word, score in sorted(
+        keywords.items(), key=lambda x: -x[1])[:300] if not (word in stopwords)}
+
+    print('num passwords = {}'.format(len(passwords)))
+
+    penalty = lambda x: 0 if (25 <= len(x) <= 80 and not '마지막' in x) else 1,
+    keywords, sents = summarize_with_sentences(
+        sentences,
+        penalty=penalty,
+        stopwords=stopwords,
+        diversity=0.5,
+        num_keywords=100,
+        num_keysents=10,
+        verbose=False
+    )
+
+    result_sentences = sents
+    for i in sents:
+        print(i)
+
+    return keyword, result_words, result_sentences
+
+# def crawling(keyword, size):
+#     baseUrl = 'https://www.google.com/search?q='
+#     url = baseUrl + quote_plus(keyword)
+#
+#     # todo: webdriver option 설정
+#     chrome_options = webdriver.ChromeOptions()
+#     chrome_options.add_argument('headless')
+#     chrome_options.add_argument("--no-sandbox")  # GUI를 사용할 수 없는 환경에서 설정, linux, docker 등
+#     chrome_options.add_argument("--disable-gpu")  # GUI를 사용할 수 없는 환경에서 설정, linux, docker 등
+#     chrome_options.add_argument('lang=ko_KR')
+#     driver = webdriver.Chrome(options=chrome_options)
+#     driver.get(url)
+#
+#     # todo: 읽어온 페이지의 html 코드 받아오기
+#     html = driver.page_source
+#     soup = BeautifulSoup(html, "lxml")
+#
+#     result = {}  # 검색 결과의 리스트 저장, key=문서이름, value=문서링크
+#     lists = soup.select('#rso > .g')
+#
+#     # 가져올 사이트 개수 조정
+#     cur_doc_count = 0
+#
+#     # todo: 검색 결과의 리스트 저장
+#     for list in lists:
+#         name = list.select_one('.LC20lb.DKV0Md').text
+#         link = list.a.attrs['href']
+#         result[name] = link
+#         cur_doc_count+=1
+#         # 가져올 사이트 개수 조정
+#         if cur_doc_count>size:
+#             break
+#     print(result)
+#
+#     contents = {}  # 모든 문서의 내용 저장, key=문서이름, value=문서 body 내용
+#     # todo: 각 문서에 대한 html body부분 저장
+#     for key, val in result.items():
+#         driver.get(val)
+#         html = driver.page_source
+#         soup = BeautifulSoup(html, "lxml")
+#
+#         # html의 태그 추출해서 삭제
+#         [s.extract() for s in soup(['style', 'script', '[document]', 'head', 'title'])] # header, footer
+#         content=soup.find('body').getText()
+#
+#         content = content.replace("\n", " ")
+#         contents[key] = content
+#         print(content)
+#     driver.close()
+#     return contents
+#
+# # main code
+# keywords = ['토마토'] # 검색어 리스트 toy
+# search_words = [' ',' 사전',' 효능',' 부작용'] # 검색어 option list
+# search_filtering = ' -유튜브, -아프리카티비, -지마켓, -옥션, -쇼핑몰'
+# size = 3
+# final_search_word = {}
+# result={}
+# for keyword in keywords:
+#     for search_word in search_words:
+#         print(keyword+search_word+search_filtering)
+#         result[keyword] = crawling(keyword+search_word+search_filtering, size)
+#
+# # f = open('crawlingResult.txt', 'w')
+# # f.write(str(result))
+# # f.close()
+# print(result)

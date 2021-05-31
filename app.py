@@ -1,18 +1,97 @@
-# ì„œë²„ê°€ ëŒì•„ê°€ëŠ” ë©”ì¸ í˜ì´ì§€
-from flask import Flask
-from flask_restx import Resource, Api
-from Symspell import Symspell
-from crawling import Crawling
+# -*- coding: cp949 -*-
+# ¼­¹ö°¡ µ¹¾Æ°¡´Â ¸ŞÀÎ ÆäÀÌÁö
+import json
+
+from konlpy.tag import Kkma
+from newspaper import Article
+
+from Symspell_py import symspell
+from GetURL_py import getURL
+from crawling_py import getResult
+
+from flask import Flask, request, jsonify
+from Symspell import Symspell, sym_spell
+from flask import request, jsonify
+from flask_restx import Api, Resource
+import json
 
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 api = Api(app)
 
-# ë¶„ë¦¬í•œ íŒŒì¼ì„ apiì— ë“±ë¡
-api.add_namespace(Symspell, '/symspell')
-api.add_namespace(Crawling, '/crawling')
+# # ºĞ¸®ÇÑ ÆÄÀÏÀ» api¿¡ µî·Ï
+# api.add_namespace(Symspell, '/symspell')
+# api.add_namespace(Crawling, '/crawling')
 
-# ì„œë²„ ì‹¤í–‰
+
+dictionary_path = 'dictionary.txt'
+sym_spell.load_dictionary(dictionary_path, 0, 1, separator="$")
+
+@app.route('/result', methods=['POST'])
+def post():
+    print(request.is_json)
+    jsonObject = request.get_json()
+    input_terms = []
+    result = []
+
+    jsonArray = jsonObject.get("input")
+    print(jsonArray)
+
+    for list in jsonArray:
+        print(list)
+        input_terms.append(list)
+
+    # ´Ü¾î ±³Á¤ °á°ú
+    result = symspell(jsonArray)
+    print(result)
+
+    # url ¸®½ºÆ® ¹Ş¾Æ¿À±â
+    url_list = getURL(result, 2)
+    print("oh")
+    print(url_list)
+
+
+    # Å°¿öµå¿Í ¼³¸í ¹Ş¾Æ¿À±â
+    jsonDic = {}
+    for i in range(0, len(url_list)):
+        # ÀÏ´Ü ¿À·ù ¸µÅ© Á¦¿Ü
+        try:
+            print(url_list[i])
+            article = Article(url_list[i], language='ko')
+            article.download()
+            article.parse()
+            kkma = Kkma()
+            sentences = kkma.sentences(article.text)
+            for idx in range(0, len(sentences)):
+                if len(sentences[idx]) <= 10:
+                    sentences[idx - 1] += (' ' + sentences[idx])
+                    sentences[idx] = ''
+            if len(sentences) < 10:
+                continue
+        except:
+            continue
+        dic = {}
+        keyword, word, sent = getResult(url_list[i], i)
+        dic["word"] = word
+        dic["sent"] = sent
+        jsonDic[keyword] = dic
+
+    jsonObject = json.dumps(jsonDic, ensure_ascii=False)
+    print(jsonObject)
+
+    message = {
+        'status': 200,
+        'message': 'OK',
+        'scores': jsonObject
+    }
+    resp = jsonify(message)
+    resp.status_code = 200
+    print(resp)
+
+    return resp
+
+
+# ¼­¹ö ½ÇÇà
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=80)
