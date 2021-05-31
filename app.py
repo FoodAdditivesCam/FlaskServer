@@ -12,13 +12,12 @@ from crawling_py import getResult
 from flask import Flask, request, jsonify
 from Symspell import Symspell, sym_spell
 from flask import request, jsonify
-from flask_restx import Api, Resource
 import json
 
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
-api = Api(app)
+#api = Api(app)
 
 # # 분리한 파일을 api에 등록
 # api.add_namespace(Symspell, '/symspell')
