@@ -1,6 +1,6 @@
 # Symspell 결과 반환
 from flask import request, jsonify
-from flask_restx import Resource, Api, Namespace
+from flask_restx import Resource, Namespace
 from symspellpy import SymSpell, Verbosity
 import json
 from flask import make_response
