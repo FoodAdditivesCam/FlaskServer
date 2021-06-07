@@ -1,5 +1,5 @@
-
-# ¼­¹ö°¡ µ¹¾Æ°¡´Â ¸ŞÀÎ ÆäÀÌÁö
+# -*- coding: utf-8 -*- #cp949
+# ì„œë²„ê°€ ëŒì•„ê°€ëŠ” ë©”ì¸ í˜ì´ì§€
 import json
 
 from konlpy.tag import Kkma
@@ -21,7 +21,7 @@ app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
 #api = Api(app)
 
-# # ºĞ¸®ÇÑ ÆÄÀÏÀ» api¿¡ µî·Ï
+# # ë¶„ë¦¬í•œ íŒŒì¼ì„ apiì— ë“±ë¡
 # api.add_namespace(Symspell, '/symspell')
 # api.add_namespace(Crawling, '/crawling')
 
@@ -31,14 +31,14 @@ sym_spell.load_dictionary(dictionary_path, 0, 1, separator="$")
 
 # DB
 basdir = os.path.abspath(os.path.dirname(__file__))
-# basdir °æ·Î¾È¿¡ DBÆÄÀÏ ¸¸µé±â
-dbfile = os.path.join(basdir, 'db.sqlite') # D:‚2021‚GradProject‚FlaskServer‚db.sqlite
-# SQLAlchemy ¼³Á¤
-# ³»°¡ »ç¿ë ÇÒ DB URI
+# basdir ê²½ë¡œì•ˆì— DBíŒŒì¼ ë§Œë“¤ê¸°
+dbfile = os.path.join(basdir, 'db.sqlite') # D:\2021\GradProject\FlaskServer\db.sqlite
+# SQLAlchemy ì„¤ì •
+# ë‚´ê°€ ì‚¬ìš© í•  DB URI
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + dbfile
-# ºñÁö´Ï½º ·ÎÁ÷ÀÌ ³¡³¯¶§ Commit ½ÇÇà(DB¹İ¿µ)
+# ë¹„ì§€ë‹ˆìŠ¤ ë¡œì§ì´ ëë‚ ë•Œ Commit ì‹¤í–‰(DBë°˜ì˜)
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
-# ¼öÁ¤»çÇ×¿¡ ´ëÇÑ TRACK
+# ìˆ˜ì •ì‚¬í•­ì— ëŒ€í•œ TRACK
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # SECRET_KEY
 app.config['SECRET_KEY'] = 'd42dc573f4bf3f3f77639b715d6266f1'
@@ -60,20 +60,20 @@ def post():
     jsonArray = jsonObject.get("input")
     jsonArray = jsonArray.replace('[', '').replace(']', '').split(',')
 
-    # ´Ü¾î ±³Á¤ °á°ú
+    # ë‹¨ì–´ êµì • ê²°ê³¼
     result = symspell(jsonArray)
     print(result)
 
-    # # url ¸®½ºÆ® ¹Ş¾Æ¿À±â
+    # # url ë¦¬ìŠ¤íŠ¸ ë°›ì•„ì˜¤ê¸°
     # count = 2
     # url_list = getURL(result, count)
     # print("oh")
     # print(url_list)
     #
-    # # Å°¿öµå¿Í ¼³¸í ¹Ş¾Æ¿À±â
+    # # í‚¤ì›Œë“œì™€ ì„¤ëª… ë°›ì•„ì˜¤ê¸°
     # jsonDic = {}
     # for i in range(0, len(url_list)):
-    #     # ÀÏ´Ü ¿À·ù ¸µÅ© Á¦¿Ü
+    #     # ì¼ë‹¨ ì˜¤ë¥˜ ë§í¬ ì œì™¸
     #     try:
     #         print(url_list[i])
     #         article = Article(url_list[i], language='ko')
@@ -115,6 +115,6 @@ def post():
     return resp
 
 
-# ¼­¹ö ½ÇÇà
+# ì„œë²„ ì‹¤í–‰
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=80)
