@@ -1,12 +1,14 @@
 # models.py
 from flask_sqlalchemy import SQLAlchemy
 import pandas as pd
-from os import environ
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.types import Integer, Text, String, DateTime
 
 db = SQLAlchemy()
-engine = create_engine('sqlite:///home/ubuntu/FlaskServer/db.sqlite', echo=False) # sqlite:///D:/2021/GradProject/FlaskServer/db.sqlite
+basdir = os.path.abspath(os.path.dirname(__file__))
+dbfile = os.path.join(basdir, 'db.sqlite')
+engine = create_engine('sqlite:///'+dbfile, echo=False) # sqlite:///D:/2021/GradProject/FlaskServer/db.sqlite
 table_name = 'Raw_material_info'
 
 class Raw_material_info(db.Model):
