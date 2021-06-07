@@ -1,4 +1,4 @@
-# -*- coding: cp949 -*-
+
 # 서버가 돌아가는 메인 페이지
 import json
 
