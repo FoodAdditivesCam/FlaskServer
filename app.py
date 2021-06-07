@@ -46,10 +46,10 @@ def post():
     print(result)
 
     # url 리스트 받아오기
-    url_list = getURL(result, 2)
+    count = 2
+    url_list = getURL(result, count)
     print("oh")
     print(url_list)
-
 
     # 키워드와 설명 받아오기
     jsonDic = {}
@@ -71,7 +71,7 @@ def post():
         except:
             continue
         dic = {}
-        keyword, word, sent = getResult(url_list[i], i)
+        keyword, word, sent = getResult(url_list[i], result[i % count])
         dic["word"] = word
         dic["sent"] = sent
         jsonDic[keyword] = dic
