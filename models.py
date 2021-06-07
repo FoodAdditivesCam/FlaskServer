@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.types import Integer, Text, String, DateTime
 
 db = SQLAlchemy()
-engine = create_engine('sqlite:///D:/2021/GradProject/FlaskServer/db.sqlite', echo=False)
+engine = create_engine('sqlite:///home/ubuntu/FlaskServer/db.sqlite', echo=False) # sqlite:///D:/2021/GradProject/FlaskServer/db.sqlite
 table_name = 'Raw_material_info'
 
 class Raw_material_info(db.Model):
