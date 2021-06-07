@@ -21,8 +21,8 @@ def crawling(keyword, size):
     url = baseUrl + quote_plus(keyword)
 
     # todo: webdriver option 설정
-    #path = '/Users/beans_bin/Downloads/chromedriver'
-    path = '/home/ubuntu/FlaskServer/chromedriver' # chromedriver.exe /home/ubuntu/FlaskServer/chromedriver
+    path = '/Users/beans_bin/Downloads/chromedriver'
+    #path = '/home/ubuntu/FlaskServer/chromedriver' # chromedriver.exe /home/ubuntu/FlaskServer/chromedriver
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('headless')
     chrome_options.add_argument("--no-sandbox")  # GUI를 사용할 수 없는 환경에서 설정, linux, docker 등

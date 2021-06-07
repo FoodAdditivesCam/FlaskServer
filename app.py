@@ -35,11 +35,7 @@ def post():
     result = []
 
     jsonArray = jsonObject.get("input")
-    print(jsonArray)
-
-    for list in jsonArray:
-        print(list)
-        input_terms.append(list)
+    jsonArray = jsonArray.replace('[', '').replace(']', '').split(',')
 
     # 단어 교정 결과
     result = symspell(jsonArray)
