@@ -5,6 +5,9 @@ import json
 from konlpy.tag import Kkma
 from newspaper import Article
 
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+
 from Symspell_py import symspell
 from GetURL_py import getURL
 from crawling_py import getResult
@@ -103,10 +106,36 @@ def post():
     jsonResp = json.dumps(jsonObject, ensure_ascii=False)
     print(jsonResp)
 
+    tags = []
+    for i in jsonResp:
+        if i.get("tag1") != "null":
+            tags.append(i.get("tag1"))
+        if i.get("tag2") != "null":
+            tags.append(i.get("tag2"))
+        if i.get("tag3") != "null":
+            tags.append(i.get("tag3"))
+        if i.get("tag4") != "null":
+            tags.append(i.get("tag4"))
+        if i.get("tag5") != "null":
+            tags.append(i.get("tag5"))
+
+    tags = list(set(tags)) # 중복 제거
+    text = ""
+    for i in tags:
+        text += i + " "
+
+    wordcloud = WordCloud(font_path='font/NanumGothic.ttf', background_color='white').generate(text)
+    plt.figure(figsize=(22, 22))  # 이미지 사이즈 지정
+    plt.imshow(wordcloud, interpolation='lanczos')  # 이미지의 부드럽기 정도
+    plt.axis('off')  # x y 축 숫자 제거
+    plt.show()
+    plt.savefig("/static/picture.png")
+
     message = {
         'status': 200,
         'message': 'OK',
-        'scores': jsonResp
+        'scores': jsonResp,
+        'url': 'http://3.35.255.25:80/static/picture.png'
     }
     resp = jsonify(message)
     resp.status_code = 200
