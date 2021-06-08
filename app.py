@@ -27,7 +27,7 @@ app.config['JSON_AS_ASCII'] = False
 
 
 dictionary_path = 'dictionary.txt'
-sym_spell.load_dictionary(dictionary_path, 0, 1, separator="$")
+sym_spell.load_dictionary(dictionary_path, 0, 1, separator="$", encoding='utf-8')
 
 # DB
 basdir = os.path.abspath(os.path.dirname(__file__))
