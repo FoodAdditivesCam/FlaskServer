@@ -105,10 +105,11 @@ def post():
     jsonObject = get_db_data(result)
     jsonResp = json.dumps(jsonObject, ensure_ascii=False)
     print(jsonResp)
-    print(type(jsonResp))
+    print(type(jsonObject))
 
     tags = []
-    for i in jsonResp:
+    jsonArr = json.loads(jsonResp)
+    for i in jsonArr:
         if i.get("tag1") != "null":
             tags.append(i.get("tag1"))
         if i.get("tag2") != "null":
