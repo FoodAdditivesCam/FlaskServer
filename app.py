@@ -110,16 +110,16 @@ def post():
     tags = []
     jsonArr = json.loads(jsonResp)
     for i in jsonArr:
-        if i.isNull("tag1"):
-            tags.append(i.get("tag1"))
-        if i.isNull("tag2"):
-            tags.append(i.get("tag2"))
-        if i.isNull("tag3"):
-            tags.append(i.get("tag3"))
-        if i.isNull("tag4"):
-            tags.append(i.get("tag4"))
-        if i.isNull("tag5"):
-            tags.append(i.get("tag5"))
+        if i["tag1"] is not None:
+            tags.append(i["tag1"])
+        if i["tag2"] is not None:
+            tags.append(i["tag2"])
+        if i["tag3"] is not None:
+            tags.append(i["tag3"])
+        if i["tag4"] is not None:
+            tags.append(i["tag4"])
+        if i["tag5"] is not None:
+            tags.append(i["tag5"])
 
     print(tags)
     tags = list(set(tags)) # 중복 제거
