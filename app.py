@@ -126,6 +126,7 @@ def post():
     text = ""
     for i in tags:
         text += str(i) + " "
+    print(text)
 
     wordcloud = WordCloud(font_path='font/NanumGothic.ttf', background_color='white').generate(text)
     plt.figure(figsize=(22, 22))  # 이미지 사이즈 지정
