@@ -110,15 +110,15 @@ def post():
     tags = []
     jsonArr = json.loads(jsonResp)
     for i in jsonArr:
-        if i.get("tag1") != "null":
+        if i.isNull("tag1"):
             tags.append(i.get("tag1"))
-        if i.get("tag2") != "null":
+        if i.isNull("tag2"):
             tags.append(i.get("tag2"))
-        if i.get("tag3") != "null":
+        if i.isNull("tag3"):
             tags.append(i.get("tag3"))
-        if i.get("tag4") != "null":
+        if i.isNull("tag4"):
             tags.append(i.get("tag4"))
-        if i.get("tag5") != "null":
+        if i.isNull("tag5"):
             tags.append(i.get("tag5"))
 
     print(tags)
