@@ -107,6 +107,7 @@ def post():
     print(jsonResp)
     print(type(jsonObject))
 
+    # 태그만 추출해서 문자열 형식으로 변환 for 워드클라우드 입력형식
     tags = []
     jsonArr = json.loads(jsonResp)
     for i in jsonArr:
@@ -126,7 +127,7 @@ def post():
     text = ""
     for i in tags:
         text += str(i) + " "
-    print(text)
+    print(text) # ex. text = "혈당조절 신장결석 근육"
 
     wordcloud = WordCloud(font_path='font/NanumGothic.ttf', background_color='white').generate(text)
     plt.figure(figsize=(22, 22))  # 이미지 사이즈 지정
