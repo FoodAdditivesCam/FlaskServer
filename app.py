@@ -105,6 +105,7 @@ def post():
     jsonObject = get_db_data(result)
     jsonResp = json.dumps(jsonObject, ensure_ascii=False)
     print(jsonResp)
+    print(type(jsonResp))
 
     tags = []
     for i in jsonResp:
