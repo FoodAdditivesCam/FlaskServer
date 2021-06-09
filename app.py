@@ -121,10 +121,11 @@ def post():
         if i.get("tag5") != "null":
             tags.append(i.get("tag5"))
 
+    print(tags)
     tags = list(set(tags)) # 중복 제거
     text = ""
     for i in tags:
-        text += i + " "
+        text += str(i) + " "
 
     wordcloud = WordCloud(font_path='font/NanumGothic.ttf', background_color='white').generate(text)
     plt.figure(figsize=(22, 22))  # 이미지 사이즈 지정
