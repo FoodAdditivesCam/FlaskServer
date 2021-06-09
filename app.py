@@ -133,8 +133,7 @@ def post():
     plt.imshow(wordcloud, interpolation='lanczos')  # 이미지의 부드럽기 정도
     plt.axis('off')  # x y 축 숫자 제거
     plt.show()
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    plt.savefig(BASE_DIR+'\\static\\picture.png', dpi=300)
+    plt.savefig('./static/picture.png', dpi=300)
 
     message = {
         'status': 200,
