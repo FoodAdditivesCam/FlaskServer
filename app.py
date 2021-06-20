@@ -60,8 +60,21 @@ def post():
     input_terms = []
     result = []
 
+    # 임시 질병 가중치 딕셔너리(추후 DB로 변경 필요)
+    weight = {"0":"단맛", "2":"혈당조절", "4":"혈당조절", "6":"소화촉진", "7":"혈당조절 단맛", "9":"소화촉진", "11":"골다공증 골격"}
+
+    # 원재료 이름
     jsonArray = jsonObject.get("input")
     jsonArray = jsonArray.replace('[', '').replace(']', '').split(',')
+
+    # 선택한 질병의 인덱스
+    jsonArray2 = jsonObject.get("weight")
+    jsonArray2 = jsonArray2.replace('[', '').replace(']', '').split(',')
+    weightList = []
+    for i in jsonArray2 :
+        if i in weight.keys():
+            li = weight[i].split(" ")
+            weightList += li
 
     # 단어 교정 결과
     result = symspell(jsonArray)
@@ -121,6 +134,11 @@ def post():
             tags.append(i["tag4"])
         if i["tag5"] is not None:
             tags.append(i["tag5"])
+
+    # 가중치
+    for i in weightList:
+        if i in tags:
+            tags.append(i)
 
     print(tags)
     tags = list(set(tags)) # 중복 제거
