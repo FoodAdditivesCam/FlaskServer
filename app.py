@@ -128,27 +128,27 @@ def post():
     for i in jsonArr:
         if i["tag1"] is not None:
             tags.append(i["tag1"])
-            if not dict.has_key(i["tag1"]):
+            if not i["tag1"] in dict:
                 dict[i["tag1"]] = []
             dict[i["tag1"]].append(i["name"])
         if i["tag2"] is not None:
             tags.append(i["tag2"])
-            if not dict.has_key(i["tag2"]):
+            if not i["tag2"] in dict:
                 dict[i["tag2"]] = []
             dict[i["tag2"]].append(i["name"])
         if i["tag3"] is not None:
             tags.append(i["tag3"])
-            if not dict.has_key(i["tag3"]):
+            if not i["tag3"] in dict:
                 dict[i["tag3"]] = []
             dict[i["tag3"]].append(i["name"])
         if i["tag4"] is not None:
             tags.append(i["tag4"])
-            if not dict.has_key(i["tag4"]):
+            if not i["tag4"] in dict:
                 dict[i["tag4"]] = []
             dict[i["tag4"]].append(i["name"])
         if i["tag5"] is not None:
             tags.append(i["tag5"])
-            if not dict.has_key(i["tag5"]):
+            if not i["tag5"] in dict:
                 dict[i["tag5"]] = []
             dict[i["tag5"]].append(i["name"])
 
