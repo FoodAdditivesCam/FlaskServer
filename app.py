@@ -121,19 +121,29 @@ def post():
     print(type(jsonObject))
 
     # 태그만 추출해서 문자열 형식으로 변환 for 워드클라우드 입력형식
+    # 딕셔너리
     tags = []
+    dict = {}
     jsonArr = json.loads(jsonResp)
     for i in jsonArr:
         if i["tag1"] is not None:
             tags.append(i["tag1"])
+            dict[i["tag1"]] += i["name"]
         if i["tag2"] is not None:
             tags.append(i["tag2"])
+            dict[i["tag2"]] += i["name"]
         if i["tag3"] is not None:
             tags.append(i["tag3"])
+            dict[i["tag3"]] += i["name"]
         if i["tag4"] is not None:
             tags.append(i["tag4"])
+            dict[i["tag4"]] += i["name"]
         if i["tag5"] is not None:
             tags.append(i["tag5"])
+            dict[i["tag5"]] += i["name"]
+
+    # 맵핑 관계 json 형식으로 변환
+    dict = json.loads(dict)
 
     # 가중치
     for i in weightList:
@@ -158,6 +168,7 @@ def post():
         'status': 200,
         'message': 'OK',
         'scores': jsonResp,
+        'map' : dict,
         'url': 'http://3.35.255.25:80/static/picture.png'
     }
     resp = jsonify(message)
