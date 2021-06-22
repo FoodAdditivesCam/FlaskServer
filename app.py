@@ -154,7 +154,7 @@ def post():
 
     # 맵핑 관계 json 형식으로 변환
     print(dict)
-    dict = json.load(dict)
+    dict = json.dumps(dict)
 
     # 가중치
     for i in weightList:
