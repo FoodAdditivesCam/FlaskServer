@@ -128,19 +128,19 @@ def post():
     for i in jsonArr:
         if i["tag1"] is not None:
             tags.append(i["tag1"])
-            dict[i["tag1"]] = dict[i["tag1"]] + i["name"]
+            dict[i["tag1"]].append(i["name"])
         if i["tag2"] is not None:
             tags.append(i["tag2"])
-            dict[i["tag2"]] = dict[i["tag2"]] + i["name"]
+            dict[i["tag2"]].append(i["name"])
         if i["tag3"] is not None:
             tags.append(i["tag3"])
-            dict[i["tag3"]] = dict[i["tag3"]] + i["name"]
+            dict[i["tag3"]].append(i["name"])
         if i["tag4"] is not None:
             tags.append(i["tag4"])
-            dict[i["tag4"]] = dict[i["tag4"]] + i["name"]
+            dict[i["tag4"]].append(i["name"])
         if i["tag5"] is not None:
             tags.append(i["tag5"])
-            dict[i["tag5"]] = dict[i["tag5"]] + i["name"]
+            dict[i["tag5"]].append(i["name"])
 
     # 맵핑 관계 json 형식으로 변환
     dict = json.loads(dict)
