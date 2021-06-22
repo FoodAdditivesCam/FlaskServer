@@ -153,7 +153,8 @@ def post():
             dict[i["tag5"]].append(i["name"])
 
     # 맵핑 관계 json 형식으로 변환
-    dict = json.loads(dict)
+    print(dict)
+    dict = json.load(dict)
 
     # 가중치
     for i in weightList:
