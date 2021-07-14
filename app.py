@@ -19,6 +19,9 @@ import json
 import os
 from models import data_update, db, get_db_data
 
+from sqlalchemy import create_engine
+
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -51,6 +54,8 @@ db.create_all()
 
 # data update
 #data_update()
+
+engine = create_engine('sqlite:///' + dbfile, convert_unicode=False, pool_size=20, pool_recycle=500, max_overflow=20)
 
 
 @app.route('/result', methods=['POST'])
