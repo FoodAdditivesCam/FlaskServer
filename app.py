@@ -22,6 +22,7 @@ from models import data_update, db, get_db_data
 from sqlalchemy import create_engine
 
 from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.pool import SingletonThreadPool
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -55,7 +56,12 @@ db.create_all()
 # data update
 #data_update()
 
-engine = create_engine('sqlite:///' + dbfile, convert_unicode=False, pool_size=20, pool_recycle=500, max_overflow=20)
+
+try:
+    engine = create_engine('sqlite:///' + dbfile, pool_size=10)
+except TypeError:
+    # The pool_size argument won't work for the default SQLite setup in SQLAlchemy 0.7, try without
+    engine = create_engine('sqlite:///' + dbfile)
 
 
 @app.route('/result', methods=['POST'])
