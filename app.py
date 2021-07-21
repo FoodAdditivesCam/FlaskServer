@@ -3,7 +3,7 @@
 import json
 
 from konlpy.tag import Kkma
-from newspaper import Article
+from newspaper import Article, api
 
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
@@ -63,7 +63,27 @@ except TypeError:
     # The pool_size argument won't work for the default SQLite setup in SQLAlchemy 0.7, try without
     engine = create_engine('sqlite:///' + dbfile)
 
+# 검색 결과 반환
+# 3.35.255.25/<keyword> 주소가 들어왔을 때 실행
+@app.route('/<string:keyword>')
+def get(keyword):
+    li = [keyword]
+    jsonObject = get_db_data(li)
+    print(jsonObject)
+    jsonResp = json.dumps(jsonObject, ensure_ascii=False)
+    message = {
+        'status': 200,
+        'message': 'OK',
+        'result' : jsonResp
+    }
+    resp = jsonify(message)
+    resp.status_code = 200
+    print(resp)
 
+    return resp
+
+
+# 분석 결과 반환
 @app.route('/result', methods=['POST'])
 def post():
     print(request.is_json)
