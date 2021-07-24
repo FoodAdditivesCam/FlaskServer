@@ -19,7 +19,7 @@ import json
 import os
 from models import data_update, db, get_db_data
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.pool import SingletonThreadPool
@@ -62,6 +62,44 @@ try:
 except TypeError:
     # The pool_size argument won't work for the default SQLite setup in SQLAlchemy 0.7, try without
     engine = create_engine('sqlite:///' + dbfile)
+
+# 검색 array 반환
+@app.route('/searchArray', methods=['POST'])
+def post_searchArray():
+    connection = engine.connect()
+    metadata = db.MetaData()
+    table = db.Table('Raw_material_info', metadata, autoload=True, autoload_with=engine)
+
+    # select * from table 과 같음
+    query = text('select name from Raw_material_info')
+    print(query)
+
+    # 쿼리 실행
+    result_proxy = connection.execute(query)
+    result_set = result_proxy.fetchall()
+
+    result = []
+
+    # set list to string list
+    for i in result_set :
+        i = list(i)
+        result.append(i[0])
+
+    print(result)
+
+    jsonResp = json.dumps(result, ensure_ascii=False)
+    message = {
+        'status': 200,
+        'message': 'OK',
+        'result': result
+    }
+
+    resp = jsonify(message)
+    resp.status_code = 200
+    print(resp)
+
+    return resp
+
 
 # 검색 결과 반환
 # 3.35.255.25/<keyword> 주소가 들어왔을 때 실행
