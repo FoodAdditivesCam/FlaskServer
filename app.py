@@ -103,7 +103,7 @@ def post_searchArray():
 
 # 검색 결과 반환
 # 3.35.255.25/<keyword> 주소가 들어왔을 때 실행
-@app.route('/<string:keyword>')
+@app.route('/search/<string:keyword>')
 def get(keyword):
     print(keyword)
     li = [keyword]
