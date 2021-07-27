@@ -105,6 +105,7 @@ def post_searchArray():
 # 3.35.255.25/<keyword> 주소가 들어왔을 때 실행
 @app.route('/<string:keyword>')
 def get(keyword):
+    print(keyword)
     li = [keyword]
     jsonObject = get_db_data(li)
     print(jsonObject)
