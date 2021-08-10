@@ -38,11 +38,11 @@ class Raw_material_info(db.Model):
         self.link = link
 
 def data_update():
-    data = pd.read_csv(r'D:\2021\GradProject\Data\db1.csv', encoding='cp949')
+    data = pd.read_csv(r'D:\2021\GradProject\Data\db_0806_filter.csv', encoding='cp949')
     data.to_sql(
         'Raw_material_info',
         engine,
-        if_exists='replace',
+        if_exists='append', #'replace',
         index=False,
         chunksize=500,
         dtype={
