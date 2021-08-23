@@ -102,7 +102,6 @@ class Search(Resource):
         baseUrl = 'https://www.google.com/search?q='
         url = baseUrl + quote_plus(keyword)
 
-
         # todo: webdriver option 설정
         path = '/home/ubuntu/FlaskServer/chromedriver' # chromedriver.exe /home/ubuntu/FlaskServer/chromedriver
         chrome_options = webdriver.ChromeOptions()
