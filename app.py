@@ -1,28 +1,19 @@
 # -*- coding: utf-8 -*- #cp949
 # 서버가 돌아가는 메인 페이지
-import json
-
-from konlpy.tag import Kkma
-from newspaper import Article, api
 
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
-from Symspell_py import symspell
-from GetURL_py import getURL
-from crawling_py import getResult
+from NotUsed.Symspell_py import symspell
 
-from flask import Flask, request, jsonify
-from Symspell import Symspell, sym_spell
+from flask import Flask
+from NotUsed.Symspell import sym_spell
 from flask import request, jsonify
 import json
 import os
-from models import data_update, db, get_db_data
+from models import db, get_db_data
 
 from sqlalchemy import create_engine, text
-
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.pool import SingletonThreadPool
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -103,7 +94,7 @@ def post_searchArray():
 
 # 검색 결과 반환
 # 3.35.255.25/<keyword> 주소가 들어왔을 때 실행
-@app.route('/search/<string:keyword>')
+@app.route('/<string:keyword>')
 def get(keyword):
     print(keyword)
     li = [keyword]

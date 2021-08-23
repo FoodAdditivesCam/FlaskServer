@@ -1,10 +1,6 @@
-from flask import request, jsonify
-from flask_restx import Resource, Api, Namespace
-from symspellpy import SymSpell, Verbosity
-import json
-from flask import make_response
+from symspellpy import Verbosity
 
-from Symspell import sym_spell
+from NotUsed.Symspell import sym_spell
 
 def symspell(input_terms):
     result = []
