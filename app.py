@@ -10,6 +10,7 @@ import json
 import os
 from models import db, get_db_data
 from sqlalchemy import create_engine, text
+from Symspell import sym_spell
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
