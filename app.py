@@ -20,7 +20,7 @@ app.config['JSON_AS_ASCII'] = False
 # api.add_namespace(Crawling, '/crawling')
 
 dictionary_path = 'dictionary.txt'
-symspell.load_dictionary(dictionary_path, 0, 1, separator="$", encoding='utf-8')
+sym_spell.load_dictionary(dictionary_path, 0, 1, separator="$", encoding='utf-8')
 
 # DB
 basdir = os.path.abspath(os.path.dirname(__file__))
