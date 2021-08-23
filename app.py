@@ -4,10 +4,10 @@
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 
-from NotUsed.Symspell_py import symspell
+from Symspell_py import symspell
 
 from flask import Flask
-from NotUsed.Symspell import sym_spell
+
 from flask import request, jsonify
 import json
 import os
@@ -25,7 +25,7 @@ app.config['JSON_AS_ASCII'] = False
 
 
 dictionary_path = 'dictionary.txt'
-sym_spell.load_dictionary(dictionary_path, 0, 1, separator="$", encoding='utf-8')
+symspell.load_dictionary(dictionary_path, 0, 1, separator="$", encoding='utf-8')
 
 # DB
 basdir = os.path.abspath(os.path.dirname(__file__))
