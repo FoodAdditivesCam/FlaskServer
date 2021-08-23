@@ -1,6 +1,6 @@
 from symspellpy import Verbosity
 
-from NotUsed.Symspell import sym_spell
+from Symspell import sym_spell
 
 def symspell(input_terms):
     result = []

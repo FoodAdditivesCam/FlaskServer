@@ -9,7 +9,7 @@ from flask import make_response
 Symspell = Namespace('Symspell')
 
 sym_spell = SymSpell()
-dictionary_path = '../dictionary.txt'
+dictionary_path = 'dictionary.txt'
 sym_spell.load_dictionary(dictionary_path, 0, 1, separator="$")
 
 # 3.35.255.25/Symsepll/<input_term> 주소가 들어왔을 때 실행
