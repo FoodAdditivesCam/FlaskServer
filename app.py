@@ -3,16 +3,12 @@
 
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
-
 from Symspell_py import symspell
-
 from flask import Flask
-
 from flask import request, jsonify
 import json
 import os
 from models import db, get_db_data
-
 from sqlalchemy import create_engine, text
 
 app = Flask(__name__)
@@ -22,7 +18,6 @@ app.config['JSON_AS_ASCII'] = False
 # # 분리한 파일을 api에 등록
 # api.add_namespace(Symspell, '/symspell')
 # api.add_namespace(Crawling, '/crawling')
-
 
 dictionary_path = 'dictionary.txt'
 symspell.load_dictionary(dictionary_path, 0, 1, separator="$", encoding='utf-8')
