@@ -1,28 +1,16 @@
 # -*- coding: utf-8 -*- #cp949
 # 서버가 돌아가는 메인 페이지
-import json
-
-from konlpy.tag import Kkma
-from newspaper import Article, api
 
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
-
 from Symspell_py import symspell
-from GetURL_py import getURL
-from crawling_py import getResult
-
-from flask import Flask, request, jsonify
-from Symspell import Symspell, sym_spell
+from flask import Flask
 from flask import request, jsonify
 import json
 import os
-from models import data_update, db, get_db_data
-
+from models import db, get_db_data
 from sqlalchemy import create_engine, text
-
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.pool import SingletonThreadPool
+from Symspell import sym_spell
 
 app = Flask(__name__)
 app.config['JSON_AS_ASCII'] = False
@@ -31,7 +19,6 @@ app.config['JSON_AS_ASCII'] = False
 # # 분리한 파일을 api에 등록
 # api.add_namespace(Symspell, '/symspell')
 # api.add_namespace(Crawling, '/crawling')
-
 
 dictionary_path = 'dictionary.txt'
 sym_spell.load_dictionary(dictionary_path, 0, 1, separator="$", encoding='utf-8')
