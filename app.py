@@ -224,20 +224,19 @@ def post():
     for i in tags:
         text += str(i) + " "
     print(text) # ex. text = "혈당조절 신장결석 근육"
-
-    wordcloud = WordCloud(font_path='font/NanumGothic.ttf', background_color='white').generate(text)
-    plt.figure(figsize=(22, 22))  # 이미지 사이즈 지정
-    plt.imshow(wordcloud, interpolation='lanczos')  # 이미지의 부드럽기 정도
-    plt.axis('off')  # x y 축 숫자 제거
-    plt.show()
-    plt.savefig('./static/picture.png', dpi=300)
+    #
+    # wordcloud = WordCloud(font_path='font/NanumGothic.ttf', background_color='white').generate(text)
+    # plt.figure(figsize=(22, 22))  # 이미지 사이즈 지정
+    # plt.imshow(wordcloud, interpolation='lanczos')  # 이미지의 부드럽기 정도
+    # plt.axis('off')  # x y 축 숫자 제거
+    # plt.show()
+    # plt.savefig('./static/picture.png', dpi=300)
 
     message = {
         'status': 200,
         'message': 'OK',
         'scores': jsonResp,
         'map' : dict,
-        'url': 'http://3.35.255.25:80/static/picture.png'
     }
     resp = jsonify(message)
     resp.status_code = 200
