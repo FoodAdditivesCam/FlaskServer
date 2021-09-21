@@ -236,7 +236,7 @@ def post():
         'status': 200,
         'message': 'OK',
         'scores': jsonResp,
-        'map' : dict,
+        'map' : dict
     }
     resp = jsonify(message)
     resp.status_code = 200
