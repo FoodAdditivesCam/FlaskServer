@@ -135,6 +135,7 @@ def post():
 
     # 단어 교정 결과
     result = symspell(jsonArray)
+    print("단어 교정 결과")
     print(result)
 
     # # url 리스트 받아오기
@@ -174,6 +175,7 @@ def post():
     # get data from db
     jsonObject = get_db_data(result)
     jsonResp = json.dumps(jsonObject, ensure_ascii=False)
+    print("디비에서 가져온 결과")
     print(jsonResp)
     print(type(jsonObject))
 
@@ -240,6 +242,7 @@ def post():
     }
     resp = jsonify(message)
     resp.status_code = 200
+    print("출력")
     print(resp)
 
     return resp
